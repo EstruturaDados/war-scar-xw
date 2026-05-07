@@ -147,6 +147,8 @@ void exibirMapa(territorio *mapa,int quantiaDeTerritorios) {
     }
 }
 
+
+
 // exibirMissao():
 // Exibe a descrição da missão atual do jogador com base no ID da missão sorteada.
 
