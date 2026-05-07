@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <time.h>
 
 // --- Constantes Globais ---
 // Definem valores fixos para o número de territórios, missões e tamanho máximo de strings, facilitando a manutenção.
@@ -48,7 +50,8 @@ void liberarMemoria(territorio *mapa);
 void inicializarTerritorios(int *quantiaDeTerritorios,territorio *mapa);
 void exibirMapa(territorio *mapa,int quantiaDeTerritorios);
 void limparBuffer();
-
+void faseDeAtaque( territorio *mapa, int quantiaDeTerritorios);
+void simularAtaque(int territorioAtaque, int territorioDefesa, territorio *mapa);
 
 
 // --- Função Principal (main) ---
@@ -65,6 +68,18 @@ int main() {
     inicializarTerritorios(&quantiaDeTerritorios,mapa);
     exibirMapa(mapa,quantiaDeTerritorios);
 
+    srand(time(NULL));
+
+    int atacar = TRUE;
+
+    while (atacar) {
+        faseDeAtaque(mapa, quantiaDeTerritorios);
+        printf("\nDigite 1 para proxima rodada ou 0 para ver o mapa:");
+        scanf("%d", &atacar);
+        limparBuffer();
+
+    }
+    exibirMapa(mapa,quantiaDeTerritorios);
 
 
     // 2. Laço Principal do Jogo (Game Loop):
@@ -140,14 +155,10 @@ void inicializarTerritorios(int *quantiaDeTerritorios,territorio *mapa) {
 void exibirMapa(territorio *mapa,int quantiaDeTerritorios) {
     printf("\n-------------- MAPA DOS TERRITORIOS -----------");
     for (int i = 0; i < quantiaDeTerritorios; i++) {
-        printf("\n-------- TERRITORIO %d --------", i + 1);
-        printf("\nNome: %s", mapa[i].nome);
-        printf("\nCor: %s", mapa[i].cor);
-        printf("\nQuantidade de tropas: %d", mapa[i].numeroTropas);
+        printf("\n%d- %s (Cor %s, Tropas:%d)",i + 1, mapa[i].nome,mapa[i].cor,mapa[i].numeroTropas);
     }
+    printf("\n------------------------------------------------");
 }
-
-
 
 // exibirMissao():
 // Exibe a descrição da missão atual do jogador com base no ID da missão sorteada.
@@ -156,10 +167,47 @@ void exibirMapa(territorio *mapa,int quantiaDeTerritorios) {
 // Gerencia a interface para a ação de ataque, solicitando ao jogador os territórios de origem e destino.
 // Chama a função simularAtaque() para executar a lógica da batalha.
 
+void faseDeAtaque(territorio *mapa, int quantiaDeTerritorios) {
+    int ataque;
+    int defesa;
+    printf("\n ---------- FASE DE ATAQUE ---------- ");
+    printf("\nEscolha o territorio de ataque (1 a %d):", quantiaDeTerritorios);
+    fscanf(stdin, "%d", &ataque);
+    limparBuffer();
+    printf("Escolha o territorio de defesa (1 a %d)", quantiaDeTerritorios);
+    fscanf(stdin, "%d", &defesa);
+    limparBuffer();
+
+    simularAtaque(ataque-1, defesa-1, mapa);
+}
+
 // simularAtaque():
 // Executa a lógica de uma batalha entre dois territórios.
 // Realiza validações, rola os dados, compara os resultados e atualiza o número de tropas.
 // Se um território for conquistado, atualiza seu dono e move uma tropa.
+
+void simularAtaque(int territorioAtaque, int territorioDefesa, territorio *mapa) {
+
+    int dadoAtaque = (rand() % 6) + 1;
+    int dadoDefesa = (rand() % 6) + 1;
+
+    printf("Dado ataque: %d | Dado defesa: %d\n", dadoAtaque, dadoDefesa);
+
+    if (dadoAtaque >= dadoDefesa) {
+        mapa[territorioDefesa].numeroTropas--;
+        printf("%s recebe ataque da %s, e acaba perdendo uma tropa dos %s\n", mapa[territorioDefesa].nome, mapa[territorioAtaque].nome, mapa[territorioDefesa].cor);
+
+        if (mapa[territorioDefesa].numeroTropas <= 0) {
+            printf("%s perdeu todas suas tropas %s, e foi tomada por uma tropa %s\n",mapa[territorioDefesa].nome, mapa[territorioDefesa].cor, mapa[territorioAtaque].cor);
+            mapa[territorioDefesa].numeroTropas = 1;
+            mapa[territorioAtaque].numeroTropas -= 1;
+            strcpy(mapa[territorioDefesa].cor, mapa[territorioAtaque].cor);
+        }
+    } else {
+        printf("%s defendeu o ataque da %s, nenhuma tropa foi perdida\n",mapa[territorioDefesa].nome, mapa[territorioAtaque].nome);
+    }
+
+}
 
 // sortearMissao():
 // Sorteia e retorna um ID de missão aleatório para o jogador.
